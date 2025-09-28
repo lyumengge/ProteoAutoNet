@@ -1,0 +1,75 @@
+---
+title: "FTC238_newcorum_PrInCE_FDR005"
+author: "MenggeLYU"
+date: "2024-09-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("/PrInCE/FDR005/newcorum/FTC238")
+library(ggplot2)
+library(PrInCE)
+library(CCprofiler)
+library(dplyr)
+library(utils)
+library(rio)
+```
+
+
+```{r Nthy reading}
+test1 <- read.delim("FTC238NO1_protmatrix_20240918.tsv", row.names=1, quote="")
+test2 <- read.delim("FTC238NO2_protmatrix_20240918.tsv", row.names=1, quote="")
+test3 <- read.delim("FTC238NO3_protmatrix_20240918.tsv", row.names=1, quote="")
+colnames(test1) <- gsub("FTC238_NO1_30minDIA_","", colnames(test1))
+colnames(test2) <- gsub("FTC238_NO2_30minDIA_","", colnames(test2))
+colnames(test3) <- gsub("FTC238_NO3_30minDIA_","", colnames(test3))
+test1 <- test1[, order(as.numeric(colnames(test1)))]
+test2 <- test2[, order(as.numeric(colnames(test2)))]
+test3 <- test3[, order(as.numeric(colnames(test3)))]
+test1 <- test1[,-c(1:3)]
+test2 <- test2[,-c(1:3)]
+test3 <- test3[,-c(1:3)]
+test1 <- test1[rowSums(is.na(test1)) != ncol(test1), ]
+test2 <- test2[rowSums(is.na(test2)) != ncol(test2), ]
+test3 <- test3[rowSums(is.na(test3)) != ncol(test3), ]
+```
+
+
+```{r database, echo=FALSE}
+gold_standard <- rio::import("corum_complex_binary.csv")
+gold_standard <- gold_standard[,2:3]
+protein_lists <- split(gold_standard$protein_id, gold_standard$complex_name)
+standard_lists <- setNames(protein_lists, names(protein_lists))
+gold_standard <- adjacency_matrix_from_list(standard_lists)
+```
+
+
+```{r PrInCE}
+matrices <- list(test1, test2, test3)
+gaussian <- lapply(matrices, build_gaussians)
+feature1 <- calculate_features(matrices[[1]], gaussian[[1]])
+feature2 <- calculate_features(matrices[[2]], gaussian[[2]])
+feature3 <- calculate_features(matrices[[3]], gaussian[[3]])
+features <- concatenate_features(list(feature1, feature2, feature3)) %>% replace_missing_data()
+label <- make_labels(gold_standard,features)
+table(label)
+interactions <- predict_interactions(features, gold_standard)
+save.image("FTC238_newcorum_FDR005_PrInCE.RData")
+rio::export(interactions, "FTC238_newcorum_FDR005_interactions.tsv")
+```
+
+
+```{r Interactions plot}
+pdf("FTC238_newcorum_PrInCE_FDR005_interactions_truepositive_withcutoff05.pdf")
+interactions_alltrue <- interactions[which(interactions$label==1),]
+interactions_cutoff <- interactions_alltrue[which(interactions_alltrue$score>0.5),]
+plot(interactions_cutoff$precision,xlab = "Index", ylab= "Precision")
+dev.off()
+```
+
+```{r Output}
+rio::export(interactions_alltrue, "FTC238_newcorum_FDR005_interactions_alltrue.tsv")
+rio::export(interactions_cutoff, "FTC238_newcorum_FDR005_interactions_alltrue_over05.tsv")
+save.image("FTC238_newcorum_FDR005_PrInCE.RData")
+```
