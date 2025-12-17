@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import joblib
 import os
 
-os.chdir("E:\\Thyroid_complex_XGB\\")
+os.chdir("/path/step4")
 output_dir = "xgb_model_best_auprc_202506012"
 os.makedirs(output_dir, exist_ok=True)
 
