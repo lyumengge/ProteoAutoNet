@@ -7,7 +7,7 @@
 ##################################################
 
 # library load --------------------------------------------------------------------
-setwd("Z:\\RF_new_feature_generation_0505")
+setwd("/path/step1")
 library(data.table)
 library(dplyr)
 library(PrInCE)
