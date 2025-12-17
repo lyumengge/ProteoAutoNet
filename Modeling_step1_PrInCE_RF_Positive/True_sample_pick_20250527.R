@@ -8,14 +8,14 @@
 
 
 # path and library --------------------------------------------------------
-setwd("E:\\final_ratio\\TP_distribution")
+setwd("/path/step1")
 library(dplyr)
 library(data.table)
 library(tidyr)
 library(ggplot2)
 
 # Nthy --------------------------------------------------------------------
-nthy_results <- fread("E:\\Nthy\\final_predictions_Nthy.csv")
+nthy_results <- fread("final_predictions_Nthy.csv")
 onefive <- nthy_results[which(nthy_results$ratio=="1:5"),]
 oneten <- nthy_results[which(nthy_results$ratio=="1:10"),]
 onefivetrue <- onefive[which(onefive$true_label=="1"),]
@@ -40,7 +40,7 @@ ggsave("Nthy_tp_distribution.pdf", width = 8, height = 6)
 onefivepick <- onefivetrue[which(onefivetrue$predicted_score>0.5),]
 onetenpick <- onetentrue[which(onetentrue$predicted_score>0.5),]
 
-load("E:\\Nthy\\optimized_analysis_final_Nthy.RData")
+load("optimized_analysis_final_Nthy.RData")
 
 onefiverows <- new_features[onefivepick$sample_id, ]
 onetenrows <- new_features[onetenpick$sample_id, ]
@@ -51,7 +51,7 @@ rm(list=ls())
 gc()
 
 # TPC --------------------------------------------------------------------
-tpc_results <- fread("E:\\TPC\\final_predictions_TPC.csv")
+tpc_results <- fread("final_predictions_TPC.csv")
 onefive <- tpc_results[which(tpc_results$ratio=="1:5"),]
 oneten <- tpc_results[which(tpc_results$ratio=="1:10"),]
 onefivetrue <- onefive[which(onefive$true_label=="1"),]
@@ -76,7 +76,7 @@ ggsave("TPC_tp_distribution.pdf", width = 8, height = 6)
 onefivepick <- onefivetrue[which(onefivetrue$predicted_score>0.5),]
 onetenpick <- onetentrue[which(onetentrue$predicted_score>0.5),]
 
-load("E:\\TPC\\optimized_analysis_final_TPC.RData")
+load("optimized_analysis_final_TPC.RData")
 
 onefiverows <- new_features[onefivepick$sample_id, ]
 onetenrows <- new_features[onetenpick$sample_id, ]
@@ -87,7 +87,7 @@ rm(list=ls())
 gc()
 
 # FTC238 --------------------------------------------------------------------
-ftc238_results <- fread("E:\\FTC238\\final_predictions_FTC238.csv")
+ftc238_results <- fread("final_predictions_FTC238.csv")
 onefive <- ftc238_results[which(ftc238_results$ratio=="1:5"),]
 oneten <- ftc238_results[which(ftc238_results$ratio=="1:10"),]
 onefivetrue <- onefive[which(onefive$true_label=="1"),]
@@ -112,7 +112,7 @@ ggsave("FTC238_tp_distribution.pdf", width = 8, height = 6)
 onefivepick <- onefivetrue[which(onefivetrue$predicted_score>0.5),]
 onetenpick <- onetentrue[which(onetentrue$predicted_score>0.5),]
 
-load("E:\\FTC238\\optimized_analysis_final_FTC238.RData")
+load("optimized_analysis_final_FTC238.RData")
 
 onefiverows <- new_features[onefivepick$sample_id, ]
 onetenrows <- new_features[onetenpick$sample_id, ]
