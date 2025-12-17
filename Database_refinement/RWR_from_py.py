@@ -5,8 +5,8 @@ import numpy as np
 import os
 
 # Set file path
-input_folder = "/storage/generateBinaryNetwork/Part2/Ten"
-output_folder = "/storage/generateBinaryNetwork/Part2/Ten"
+input_folder = "/path/database_refinement"
+output_folder = "/path/database_refinement"
 
 # Make sure the output path
 if not os.path.exists(output_folder):
