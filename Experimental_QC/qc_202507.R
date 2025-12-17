@@ -3,7 +3,7 @@
 ## Script purpose:JAKA-qc
 ## Date: 2025-04-14
 ## Author: Mengge LYU
-## Version: 1.0
+## Version: 1.4.1
 ##################################################
 
 # library loading-----------------------------------------------------------------
@@ -19,9 +19,9 @@ library(tidyverse)
 
 
 # data loading ------------------------------------------------------------
-test1 <- read.delim("E:\\MenggeLYU\\NC\\Thyroid_cellline_all_20240617\\FDR005\\8_protmattrix\\TPC1_protmatrix_20240918.tsv", row.names=1, quote="")
-test2 <- read.delim("E:\\MenggeLYU\\NC\\Thyroid_cellline_all_20240617\\FDR005\\8_protmattrix\\TPC2_protmatrix_20240918.tsv", row.names=1, quote="")
-test3 <- read.delim("E:\\MenggeLYU\\NC\\Thyroid_cellline_all_20240617\\FDR005\\8_protmattrix\\TPC3_protmatrix_20240918.tsv", row.names=1, quote="")
+test1 <- read.delim("TPC1_protmatrix_20240918.tsv", row.names=1, quote="")
+test2 <- read.delim("TPC2_protmatrix_20240918.tsv", row.names=1, quote="")
+test3 <- read.delim("TPC3_protmatrix_20240918.tsv", row.names=1, quote="")
 
 # missing value plot test1------------------------------------------------------
 na_counts1 <- data.frame(colSums(is.na(test1)))
@@ -83,7 +83,7 @@ df1 <- test1[,-grep("TPC.1_NO3_30minDIA_1", colnames(test1))]
 # df_clean <- test1[na_proportion <= 0.9, ]
 
 # precursor matrix ----------------------------------------------------------
-df <- fread("E:\\MenggeLYU\\NC\\Thyroid_cellline_all_20240617\\FDR005\\report.tsv")
+df <- fread("report.tsv")
 df_pick <- df[df$Q.Value <= 0.05 & df$Global.Q.Value <= 0.05 & df$PG.Q.Value <= 0.05 & df$Global.PG.Q.Value <= 0.05 & df$Protein.Q.Value <= 0.05,]
 df_pick1 <- df_pick[,c("File.Name", "Protein.Group", "Protein.Ids","Stripped.Sequence","PG.Quantity")]
 df_pick2 <- unique(df_pick1) # from 11934754 to 10669425 rows
@@ -111,7 +111,7 @@ non_na_counts_df <- data.frame(
   Column = names(non_na_counts),
   Count = non_na_counts)
 pep_draw <- non_na_counts_df[2:13,]
-pdf("Cell_line_replicate_MGL_20250424.pdf", width = 10, height = 6)
+pdf("Cell_line_replicate.pdf", width = 10, height = 6)
 ggplot(pep_draw, aes(x = Column, y = Count)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "black") +  
   xlab("Filename") +
@@ -125,10 +125,10 @@ ggplot(pep_draw, aes(x = Column, y = Count)) +
     axis.text.y = element_text(size = 12, color = "black") 
   )
 dev.off()
-save.image("JAKA_QC_MGL_20250424.Rdata")
+save.image("JAKA_QC.Rdata")
 # protein matrix ----------------------------------------------------------
 ###pool sample
-thy <- rio::import("E:\\MenggeLYU\\NC\\Thyroid_cellline_all_20240617\\FDR005\\peptidematrix_Thyroid_cellline_all_FDR005_20240906.tsv")
+thy <- rio::import("peptidematrix_Thyroid_cellline_all_FDR005_20240906.tsv")
 thy_pool <- thy[,grep("POOL", colnames(thy))]
 thy_pool2 <- cbind(thy[,1:2], thy_pool)
 dim(thy_pool2) # 49588 14
@@ -238,7 +238,7 @@ venn_plot <- draw.triple.venn(
 
 grid.draw(venn_plot)
 dev.off()
-save.image("JAKA_QC_MGL_20250424.RData")
+save.image("JAKA_QC.Rdata")
 # prot matrix - final ----------------------------------------------------------
 prot_qc <- aggregate(JAKA_qc2,
                      by = list(JAKA_qc2$Protein.Group),
@@ -272,7 +272,7 @@ prot_draw <- non_na_counts_df[2:13,]
 rownames(prot_draw) <- gsub("_30minDIA_POOL","",rownames(prot_draw))
 prot_draw$Column <- gsub("_30minDIA_POOL","",prot_draw$Column)
 prot_draw <- prot_draw[-c(7,8,9),]
-pdf("Three_cell_line_prot_replicate_MGL_20250425.pdf", width = 12, height = 6)
+pdf("Three_cell_line_prot_20250425.pdf", width = 12, height = 6)
 ggplot(prot_draw, aes(x = Column, y = Count)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "black", width = 0.7) +  
   geom_text(
@@ -534,16 +534,16 @@ diag(jaccard_matrix) <- 1
 
 # Jaccard plot ------------------------------------------------------------
 print(jaccard_matrix)
-pdf("Jaccard_plot_MGL_20250427.pdf", width = 10, height = 10)
+pdf("Jaccard_plot_20250427.pdf", width = 10, height = 10)
 corrplot(jaccard_matrix, 
          method = "color",
          addCoef.col = "black",
          tl.col = "darkblue",
          title = "Jaccard Similarity Between Nthy Replicates")
 dev.off()
-save.image("JAKA_QC_MGL_20250424.Rdata")
+save.image("JAKA_QC.Rdata")
 
-df <- fread("Z:\\members\\lyumengge\\00_NC_rebuttal\\Automatic_part\\JAKA_qc_16files_MGL_20250422\\report.tsv")
+df <- fread("report.tsv")
 df_pick <- df[df$Q.Value <= 0.05 & df$Global.Q.Value <= 0.05 & df$PG.Q.Value <= 0.05 & df$Global.PG.Q.Value <= 0.05 & df$Protein.Q.Value <= 0.05,]
 df_pick1 <- df_pick[,c("File.Name", "Protein.Group", "Protein.Ids","Stripped.Sequence","PG.Quantity")]
 df_pick2 <- unique(df_pick1) # from 11934754 to 10669425 rows
@@ -620,7 +620,7 @@ group_summary <- prot_draw %>%
   summarize(Mean = mean(Count),
             SD = sd(Count))
 
-pdf("AutovsHand_prot_replicate_MGL_20250505.pdf", width = 12, height = 6)
+pdf("AutovsHand_prot_replicate_20250505.pdf", width = 12, height = 6)
 ggplot(prot_draw, aes(x = Column, y = Count)) +
   geom_bar(stat = "identity", fill = "skyblue", color = "black", width = 0.7) +  
   geom_text(
@@ -653,7 +653,7 @@ ggplot(prot_draw, aes(x = Column, y = Count)) +
   )
 dev.off()
 
-pdf("AutovsHand_cv_MGL_20250505.pdf", width = 12, height = 6)
+pdf("AutovsHand_cv_20250505.pdf", width = 12, height = 6)
 # ggplot(group_summary, aes(x = Group, y = CV, fill = Group)) +
 #   geom_bar(stat = "identity") +  
 #   labs(title = "Coefficient of Variation by Group", x = "Group", y = "CV (%)") +  
