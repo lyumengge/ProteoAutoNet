@@ -16,7 +16,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-os.chdir("E:\\Feature_generation")
+os.chdir("/path/step3")
 
 # 1. Fast pearson correlation
 @njit(cache=True)
@@ -135,7 +135,6 @@ def calculate_features_for_pair(pair, tpc_data, gaussians_dict=None, smooth_widt
         'perturbation_B': prot_b,
         'n_pairs': int(n_pairs),
         'pearson_R_raw': float(1-pearson_raw),
-        # 'pearson_pvalue_raw': float(pearson_raw_p), 
         'pearson_R_smoothed': float(1-pearson_smoothed),
         'euclidean_distance': euclidean(valid_data_a, valid_data_b),
         'co_peak': abs(np.nanargmax(valid_data_a) - np.nanargmax(valid_data_b))}    
