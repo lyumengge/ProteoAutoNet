@@ -7,7 +7,7 @@
 ##################################################
 
 # library load --------------------------------------------------------------------
-setwd("E:\\rebuttal_t3")
+setwd("/path/step1")
 library(data.table)
 library(dplyr)
 library(PrInCE)
