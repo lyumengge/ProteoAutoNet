@@ -5,7 +5,6 @@ Created on Sat Jun 28 00:16:29 2025
 @author: PC
 """
 
-
 import os
 import pandas as pd
 import numpy as np
@@ -15,42 +14,41 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_s
 import matplotlib.pyplot as plt
 
 # 1.Load path and model
-os.chdir("E:\\MenggeLYU\\NC_rebuttal_t3\\New_feature_RF\\ComplexXGB\\xgb_model_best_auprc_20250615")
-output_dir = "E:\\MenggeLYU\\NC_rebuttal_t3\\New_feature_RF\\ComplexXGB\\xgb_model_best_auprc_20250615\\"
+os.chdir("/path/step4/xgb_model_best_auprc_20250615")
+output_dir = "/path/step4/xgb_model_best_auprc_20250615"
 model_path = os.path.join(output_dir, 'optimized_xgb_model_auprc.joblib')
-ftc_file = "E:\\MenggeLYU\\NC_rebuttal_t3\\New_feature_RF\\ComplexXGB\\TPC_all_feature_20250627.tsv"  # external validation data with label and features
+ftc_file = "TPC_all_feature_20250627.tsv"  # external validation data with label and features
 features = ['pearson_R_smoothed', 'euclidean_distance', 'co_peak', 'pearson_R_raw', 'WCC_score']
 eval_dir = os.path.join(output_dir, "TPC_all_label_withprecision_weighted3")
 os.makedirs(eval_dir, exist_ok=True)
 
-# 修改后的加权累积精度计算函数
+
 def calculate_weighted_cumulative_precision(y_true, y_prob):
     """
-    计算加权累积精度（NaN样本用预测概率作为权重）
-    参数:
-        y_true: 包含真实标签的数组（1=正例，0=负例，NaN=未知）
-        y_prob: 预测概率数组
-    返回:
-        累积精度数组
+    para:
+        y_true: 1=pos，0=neg，NaN=unknown）
+        y_prob: predicted prob
+    return:
+        weighted precision
     """
-    # 替换NaN为预测概率（表示它是阳性的概率）
+    # predicted prob
     y_true_weighted = np.where(np.isnan(y_true), y_prob, y_true)
     
-    # 按预测概率从高到低排序
+    # rank the prob
     sorted_indices = np.argsort(y_prob)[::-1]
     y_true_sorted = y_true_weighted[sorted_indices]
     
-    # 计算累积加权TP和样本数
-    weighted_TP = np.cumsum(y_true_sorted)  # 加权真阳性
+    # weighted TP
+    weighted_TP = np.cumsum(y_true_sorted)  # weighted TP
     total_samples = np.arange(1, len(y_true_sorted)+1)
     
     precision = weighted_TP / total_samples
     return precision
 
-# 保留原有的简单精度计算函数用于比较
+# keep the originial preciision
 def calculate_naive_cumulative_precision(labels):
     """
-    简单累积精度计算（NaN视为负例）
+    NaN=unknown
     """
     labels = np.where(np.isnan(labels), 0, labels)
     TPs = np.cumsum(labels)
@@ -81,25 +79,25 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         X_clear = clear_data[features]
         y_clear = clear_data['label'].astype(int) # check the label - int type
         y_pred = model.predict(X_clear)
-        y_prob = clear_data['predicted_prob'] = model.predict_proba(X_clear)[:, 1]  # 添加预测概率到数据框
+        y_prob = clear_data['predicted_prob'] = model.predict_proba(X_clear)[:, 1]  # add the predicted prob
         
-        # 保存所有有标签样本的完整结果
-        clear_data['predicted_label'] = y_pred  # 添加预测标签
+        # save the results
+        clear_data['predicted_label'] = y_pred  # add the predicted tag
         clear_data.to_csv(os.path.join(output_dir, "all_labeled_pairs_results.tsv"), sep="\t", index=False)
         print(f"\nSaved all labeled pairs results ({len(clear_data)} samples) to all_labeled_pairs_results.tsv")
         
-        # 分析有标签样本中预测概率>0.95的pairs
+        # predicted prob > 0.95
         high_prob_labeled = clear_data[clear_data['predicted_prob'] > 0.95]
         print(f"\nLabeled samples with predicted_prob > 0.95: {len(high_prob_labeled)}")
         
         high_prob_labeled2 = clear_data[clear_data['predicted_prob'] > 0.5]
         print(f"\nLabeled samples with predicted_prob > 0.5: {len(high_prob_labeled2)}")
         
-        # 保存高概率有标签样本
+        # save the predicted prob > 0.95
         high_prob_labeled.to_csv(os.path.join(output_dir, "high_prob095_labeled_pairs.tsv"), sep="\t", index=False)
         high_prob_labeled2.to_csv(os.path.join(output_dir, "high_prob05_labeled_pairs.tsv"), sep="\t", index=False)
         
-        # 原有指标计算
+        # calculate the para
         metrics = {
             'n_samples': len(X_clear),
             'accuracy': accuracy_score(y_clear, y_pred),
@@ -157,23 +155,21 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         X_amb = ambiguous_data[features]
         y_prob_amb = ambiguous_data['predicted_prob'] = model.predict_proba(X_amb)[:, 1]
         
-        # 分析无标签样本中预测概率>0.95的pairs
+        # predicted prob>0.95 with NaN labels
         high_prob_unlabeled = ambiguous_data[ambiguous_data['predicted_prob'] > 0.95]
         print(f"\nUnlabeled samples with predicted_prob > 0.95: {len(high_prob_unlabeled)}")
         
         high_prob_unlabeled2 = ambiguous_data[ambiguous_data['predicted_prob'] > 0.5]
         print(f"\nUnlabeled samples with predicted_prob > 0.5: {len(high_prob_unlabeled2)}")
         
-        # 保存高概率无标签样本
+        # save the predicted prob>0.95 with NaN labels
         high_prob_unlabeled.to_csv(os.path.join(output_dir, "high_prob095_unlabeled_pairs.tsv"), sep="\t", index=False)
         high_prob_unlabeled2.to_csv(os.path.join(output_dir, "high_prob05_unlabeled_pairs.tsv"), sep="\t", index=False)
         
-        # 原有处理
         amb_results = ambiguous_data.copy()
         amb_results['predicted_label'] = (y_prob_amb > 0.5).astype(int)
         amb_results.to_csv(os.path.join(output_dir, "ambiguous_predictions.tsv"), sep="\t", index=False)
         
-        # 预测概率直方图
         plt.figure(figsize=(10, 6))
         plt.hist(y_prob_amb, bins=50, color='purple', alpha=0.7)
         plt.xlabel('Predicted Probability')
@@ -182,7 +178,7 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         plt.savefig(os.path.join(output_dir, "ambiguous_distribution.pdf"))
         plt.close()
         
-        # 高置信度样本
+        # high confidence interactions
         high_confidence_mask = y_prob_amb >= 0.9
         high_confidence_pairs = amb_results.loc[high_confidence_mask]
         high_confidence_pairs.to_csv(os.path.join(output_dir, "high_confidence_predictions.tsv"), sep="\t", index=False)
@@ -192,15 +188,15 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         all_data = pd.concat([clear_data, ambiguous_data])
         all_data = all_data.sort_values('predicted_prob', ascending=False)
 
-        # 获取真实标签和预测概率
+        # true labels and predicted prob
         true_labels = all_data['label'].values
         predicted_probs = all_data['predicted_prob'].values
     
-        # 计算三种精度
+        # three precisions
         weighted_precision = calculate_weighted_cumulative_precision(true_labels, predicted_probs)
         naive_precision = calculate_naive_cumulative_precision(true_labels)
     
-        # 创建一个 DataFrame 来保存精度信息
+        # create precision_df
         precision_df = pd.DataFrame({
             'protein_pair_rank': range(1, len(all_data)+1),
             'predicted_prob': predicted_probs,
@@ -208,13 +204,12 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
             'naive_precision': naive_precision
         })
     
-        # 添加 labeled only 精度
+        # labeled only - precision
         labeled_mask = ~np.isnan(true_labels)
         labeled_true = true_labels[labeled_mask]
     
         if len(labeled_true) > 0:
             labeled_precision_values = calculate_naive_cumulative_precision(labeled_true)
-            # 创建与完整数据集相同长度的数组
             labeled_precision_full = np.full(len(all_data), np.nan)
             labeled_indices = np.where(labeled_mask)[0]
             copy_length = min(len(labeled_precision_values), len(labeled_indices))
@@ -222,32 +217,31 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         else:
             labeled_precision_full = np.full(len(all_data), np.nan)
     
-        # 将 labeled only precision 添加进 df
+        # labeled only precision added wih df
         precision_df['labeled_only_precision'] = labeled_precision_full
     
-        # ✅ 关键修改：将 all_data 原始数据合并进来
-        # 注意：因为 all_data 已经被排序过了，所以直接拼接
+        # combined the original matrices
         precision_df = pd.concat([all_data.reset_index(drop=True), precision_df.reset_index(drop=True)], axis=1)
     
-        # 保存结果
+        # save results
         precision_df.to_csv(os.path.join(eval_dir, "cumulative_precision_all_samples_with_info.tsv"), sep="\t", index=False)
         
         
-        # 计算precision>0.95和>0.5的蛋白对数目（使用加权精度）
+        # Num of interactions with high prob
         n_high_precision_95 = np.sum(weighted_precision > 0.95)
         n_high_precision_50 = np.sum(weighted_precision > 0.5)
         
         print(f"\nNumber of protein pairs with weighted precision > 0.95: {n_high_precision_95}")
         print(f"Number of protein pairs with weighted precision > 0.5: {n_high_precision_50}")
         
-        # 将结果保存到metrics文件
+        # save to
         if len(clear_data) > 0:
             metrics_df = pd.read_csv(os.path.join(output_dir, "metrics_clear_labels.csv"))
             metrics_df['n_high_precision(>0.95)'] = n_high_precision_95
             metrics_df['n_high_precision(>0.5)'] = n_high_precision_50
             metrics_df.to_csv(os.path.join(output_dir, "metrics_clear_labels.csv"), index=False)
         
-        # 绘制三种累积精度曲线对比图
+        # different precision cal
         plt.figure(figsize=(12, 6))
         plt.plot(precision_df['protein_pair_rank'], precision_df['weighted_precision'], 
                 color='blue', label='Weighted (NaN=predicted_prob)')
@@ -267,13 +261,13 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         plt.savefig(os.path.join(output_dir, "cumulative_precision_comparison.pdf"))
         plt.close()
         
-        # 打印Top K的精度（加权）
+        # Weighted Precision at Top-K
         print("\nWeighted Precision at Top-K:")
         for k in [1000, 5000, 10000, 20000]:
             if k < len(weighted_precision):
                 print(f"Top {k}: {weighted_precision[k-1]:.4f}")
     
-    # 优化阈值分析（保持不变）
+    # best_threshold
     if len(clear_data) > 0:
         precision_vals, recall_vals, thresholds = precision_recall_curve(y_clear, y_prob)
         f1_scores = 2 * (precision_vals * recall_vals) / (precision_vals + recall_vals + 1e-8)
@@ -291,7 +285,7 @@ def evaluate_ftc133(model, validation_file, features, output_dir):
         print("\nOptimized results:")
         print(opt_metrics)
     
-    # Precision at K分析（保持不变）
+    # Precision at Top-K 
     if len(ambiguous_data) > 0:
         prob_sorted = np.sort(y_prob_amb)[::-1]
         cumulative_precision = np.cumsum(prob_sorted) / (np.arange(len(prob_sorted)) + 1)
