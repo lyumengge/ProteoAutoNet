@@ -14,7 +14,7 @@ from sklearn.metrics import (accuracy_score, precision_score, recall_score, f1_s
 import matplotlib.pyplot as plt
 
 # 1.Load path and model
-os.chdir("E:\\XGB_model\\")
+os.chdir("/path/step4")
 output_dir = "xgb_maxauprc_TPC_valiFTC133"
 model_path = os.path.join(output_dir, 'optimized_xgb_model_auprc.joblib')
 ftc_file = "FTC133_vali_data_20250608.tsv"  # external validation data with label and features
