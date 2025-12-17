@@ -3,7 +3,7 @@
 ## Script purpose:Three cell lines venn and jaccard
 ## Date: 2025-04-29
 ## Author: Mengge LYU
-## Version: 1.0
+## Version: 2.1.0
 ##################################################
 
 # library loading-----------------------------------------------------------------
@@ -15,7 +15,7 @@ library(data.table)
 library(corrplot)
 
 # data loading ------------------------------------------------------------
-setwd("E:\\Thyroid_cellline_all")
+setwd("\path\experimental_qc")
 df <- fread("report.tsv")
 df_pick <- df[df$Q.Value <= 0.05 & df$Global.Q.Value <= 0.05 & df$PG.Q.Value <= 0.05 & df$Global.PG.Q.Value <= 0.05 & df$Protein.Q.Value <= 0.05,]
 df_pick1 <- df_pick[,c("File.Name", "Protein.Group", "Protein.Ids","Stripped.Sequence","PG.Quantity")]
