@@ -18,7 +18,7 @@ from datetime import datetime
 
 warnings.filterwarnings('ignore') 
 
-os.chdir("D:/TP_perturbation/")
+os.chdir("/path/step2")
 
 # 1. Config setting
 class Config:
