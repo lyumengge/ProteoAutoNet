@@ -7,7 +7,7 @@
 ##################################################
 
 # library load --------------------------------------------------------------------
-setwd("D:\\8_protmattrix")
+setwd("/path/step1")
 library(data.table)
 library(dplyr)
 library(PrInCE)
