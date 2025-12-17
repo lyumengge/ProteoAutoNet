@@ -8,7 +8,7 @@
 
 
 # path and library --------------------------------------------------------
-setwd("E://NC//CHINDA")
+setwd("/path/database_refinement")
 library(rio)
 library(dplyr)
 library(tidyr)
