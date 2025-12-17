@@ -7,7 +7,7 @@
 ##################################################
 
 # path and library --------------------------------------------------------
-setwd("E:\\final_ratio\\TP_perturbation")
+setwd("/path/step2")
 library(dplyr)
 library(data.table)
 library(tidyr)
@@ -165,22 +165,11 @@ perturbed_df <- map_dfr(1:length(perturbed_samples), function(pair_idx) {
 str(perturbed_df)
 head(perturbed_df)
 
-# # long format to wide format
-# perturbed_wide <- perturbed_df %>%
-#   pivot_longer(
-#     cols = c(value_A, value_B),
-#     names_to = "protein_role",
-#     values_to = "intensity"
-#   ) %>%
-#   mutate(protein = ifelse(protein_role == "value_A", protein_A, protein_B)) %>%
-#   select(-protein_role, -protein_A, -protein_B)
-# 
-# # pick 
+
 perturbed_only <- perturbed_df %>%
   filter(sample_type == "perturbed")
 
-# protein_A and protein_B fill up value_A and value_B
-# protein_A == value_A
+
 proteinA_matrix <- perturbed_only %>%
   mutate(
     row_name = paste(protein_A, sample_id, matrix, sep = "_"),
@@ -197,7 +186,7 @@ proteinA_matrix <- perturbed_only %>%
   ) %>%
   column_to_rownames("row_name")
 
-# protein_B == value_B
+
 proteinB_matrix <- perturbed_only %>%
   mutate(
     row_name = paste(protein_B, sample_id, matrix, sep = "_"),
@@ -212,9 +201,9 @@ proteinB_matrix <- perturbed_only %>%
   ) %>%
   column_to_rownames("row_name")
 
-# comb protein_A and protein_B (protein ID need to grep"_")
+
 final_matrix <- rbind(proteinA_matrix, proteinB_matrix)
-# manipulate NaN to NA
+
 final_matrix2 <- replace_nan_inf(final_matrix)
 final_matrix2_with_id <- cbind(ID = rownames(final_matrix2), final_matrix2)
 rio::export(perturbed_df,"TPC_1v5_allpairs_20250529.tsv")
