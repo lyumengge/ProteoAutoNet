@@ -3,13 +3,13 @@
 ## Script purpose: Three databases comparison
 ## Date: 2025-06-06 
 ## Author: MenggeLYU
-## Version: 1.0
+## Version: 1.5.1
 ##################################################
 
 
 
 # Path and library --------------------------------------------------------
-setwd("E://MenggeLYU//CHINDA")
+setwd("/path/datbase_refinement")
 library(rio)
 library(dplyr)
 library(tidyr)
@@ -17,7 +17,7 @@ library(stringr)
 library(corrplot)
 
 # corum -------------------------------------------------------------------
-newcorum <- rio::import("E://MenggeLYU//CHINDA//CORUM//CORUM download 2022_09_12.xlsx") #5204
+newcorum <- rio::import("CORUM download 2022_09_12.xlsx") #5204
 newcorum <- newcorum[which(newcorum$Organism=="Human"),] #3637
 newcorum_prot <- as.data.frame(newcorum$`subunits(UniProt IDs)`)
 colnames(newcorum_prot)[1] <- "Prot"
@@ -32,7 +32,7 @@ null <- newcorum_prot_left[which(is.na(newcorum_prot_left$Reviewed)),]
 rio::export(null, "CORUM_unmatched_proteins_MGL_20240923.tsv")
 
 # humap -------------------------------------------------------------------
-humap <- rio::import("E://MenggeLYU//CHINDA//Hu.map//humap2_complexes_20200809.txt")
+humap <- rio::import("humap2_complexes_20200809.txt")
 humap <- humap[,c(1,3)]
 colnames(humap)[2] <- "Prot"
 humap_split <- humap %>% as_tibble() %>% 
@@ -58,7 +58,7 @@ table(humap_prot$Sequence)
 length(unique(humap_left3_twocol3$HuMAP2_ID))
 
 # Complex Portal ----------------------------------------------------------
-cp <- rio::import("E:\\MenggeLYU\\CHINDA\\Complex_portal\\complex_portal_9606.tsv")
+cp <- rio::import("complex_portal_9606.tsv")
 unique(cp$`Taxonomy identifier`)
 cp <- cp[,c(1,19)]
 length(unique(cp$Prot))
